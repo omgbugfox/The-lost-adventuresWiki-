@@ -1,0 +1,813 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<style>:root{color-scheme:light}body{margin:0}img{max-width:100%}[hidden]{display:none!important}</style>
+<title>The Last Adventure Wiki</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@600;700&family=IBM+Plex+Mono:wght@400;500&family=Source+Sans+3:wght@400;600;700&display=swap">
+<style>
+/* Layout: sticky top bar, left page menu grouped by label, wide reading column with wiki-style infoboxes. */
+:root{
+  --font-display:"Barlow Condensed","Arial Narrow",sans-serif;
+  --font-body:"Source Sans 3",system-ui,-apple-system,"Segoe UI",sans-serif;
+  --font-mono:"IBM Plex Mono",ui-monospace,Menlo,monospace;
+  --bg:#e9eee9; --panel:#f6f8f4; --fg:#15221f; --muted:#56655f; --line:#c9d3cc;
+  --accent:#0b6e78; --accent-ink:#ffffff; --flag:#d9a21b; --danger:#b3261e; --contour:#bccabf;
+  --l1:#0b6e78; --l2:#9a5b13; --l3:#6a4c93; --l4:#2e7d32; --l5:#b23a48; --l6:#3b5bdb;
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  --bg:#0c1315; --panel:#121c1f; --fg:#e3ece8; --muted:#8fa39b; --line:#243236;
+  --accent:#52c2cc; --accent-ink:#06191b; --flag:#e8b93d; --danger:#ff8a80; --contour:#1c2e33;
+  --l1:#52c2cc; --l2:#e0a050; --l3:#b79cff; --l4:#7ccf80; --l5:#ff8fa0; --l6:#8fa8ff; color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#0c1315; --panel:#121c1f; --fg:#e3ece8; --muted:#8fa39b; --line:#243236;
+  --accent:#52c2cc; --accent-ink:#06191b; --flag:#e8b93d; --danger:#ff8a80; --contour:#1c2e33;
+  --l1:#52c2cc; --l2:#e0a050; --l3:#b79cff; --l4:#7ccf80; --l5:#ff8fa0; --l6:#8fa8ff; color-scheme:dark}
+
+*{box-sizing:border-box}
+body{background:var(--bg);color:var(--fg);font:400 17px/1.6 var(--font-body);padding-inline:0}
+body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset-top,0px);z-index:10;background:var(--bg)}
+a{color:var(--accent)}
+button{font:inherit;color:inherit;cursor:pointer}
+:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+h1,h2,h3{font-family:var(--font-display);font-weight:700;line-height:1.1;letter-spacing:.01em;text-wrap:balance;margin:0}
+.mono{font-family:var(--font-mono);font-size:12px;letter-spacing:.06em;text-transform:uppercase;color:var(--muted)}
+
+/* top bar */
+.bar{position:sticky;top:env(safe-area-inset-top,0px);z-index:20;background:var(--bg);border-bottom:1px solid var(--line)}
+.bar-in{display:flex;align-items:center;gap:12px;min-height:56px;max-width:1180px;margin:0 auto;padding-inline:max(16px,env(safe-area-inset-left,0px)) max(16px,env(safe-area-inset-right,0px))}
+.brand{font-family:var(--font-display);font-weight:700;font-size:22px;letter-spacing:.02em;text-transform:uppercase;text-decoration:none;color:var(--fg);min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;flex:1}
+.status{font-family:var(--font-mono);font-size:11.5px;color:var(--muted);white-space:nowrap}
+.status.err{color:var(--danger)}
+.btn{border:1px solid var(--line);background:var(--panel);border-radius:6px;padding:7px 13px;font-weight:600;font-size:15px;line-height:1.2}
+.btn:hover{border-color:var(--accent)}
+.btn.pri{background:var(--accent);color:var(--accent-ink);border-color:var(--accent)}
+.btn.ghost{background:transparent}
+.btn.danger{color:var(--danger);border-color:var(--danger);background:transparent}
+.btn.sm{padding:4px 9px;font-size:13px}
+.menu-btn{display:none}
+
+/* shell */
+.layout{display:grid;grid-template-columns:268px minmax(0,1fr);gap:36px;max-width:1180px;margin:0 auto;padding-block:28px 96px;padding-inline:max(16px,env(safe-area-inset-left,0px)) max(16px,env(safe-area-inset-right,0px))}
+.side{align-self:start;position:sticky;top:calc(env(safe-area-inset-top,0px) + 76px);max-height:calc(100vh - 100px);overflow:auto;min-width:0;padding-right:4px}
+.search{width:100%;border:1px solid var(--line);background:var(--panel);color:var(--fg);border-radius:6px;padding:8px 11px;font:inherit;font-size:15px;margin-bottom:14px}
+.nav-home{display:block;font-weight:700;text-decoration:none;color:var(--fg);padding:5px 0;margin-bottom:6px}
+.grp{margin:16px 0 0}
+.grp-h{display:flex;align-items:center;gap:8px;margin-bottom:4px}
+.dot{width:9px;height:9px;border-radius:50%;background:var(--muted);flex:none}
+.nav{display:block;text-decoration:none;color:var(--fg);padding:4px 0 4px 17px;border-left:2px solid var(--line);margin-left:3px;font-size:16px;overflow-wrap:anywhere}
+.nav:hover{color:var(--accent)}
+.nav[aria-current="page"]{border-left-color:var(--accent);font-weight:700;color:var(--accent)}
+.empty-note{color:var(--muted);font-size:15px;padding:6px 0}
+.scrim{display:none}
+
+/* main */
+main{min-width:0}
+.crumb{margin-bottom:10px}
+.crumb a{color:var(--muted);text-decoration:none}
+.crumb a:hover{color:var(--accent)}
+.page-title{font-size:clamp(38px,6vw,60px);text-transform:uppercase}
+.summary{font-size:19px;color:var(--muted);margin:10px 0 0;max-width:62ch}
+.chip{display:inline-flex;align-items:center;gap:7px;font-family:var(--font-mono);font-size:11.5px;letter-spacing:.06em;text-transform:uppercase;border:1px solid var(--line);border-radius:99px;padding:3px 10px;background:var(--panel);color:var(--fg);text-decoration:none}
+.chip .dot{width:8px;height:8px}
+.cover{margin:22px 0 0;border-radius:8px;overflow:hidden;border:1px solid var(--line);background:var(--panel);aspect-ratio:21/9;max-width:100%}
+.cover img{width:100%;height:100%;object-fit:cover;display:block}
+.body{margin-top:28px;display:flow-root;max-width:70ch}
+.body>*+*{margin-top:18px}
+.body h2{font-size:32px;text-transform:uppercase;border-bottom:1px solid var(--line);padding-bottom:6px;margin-top:34px}
+.body p{margin:0}
+.wl{color:var(--accent);text-decoration:underline;text-underline-offset:3px}
+.wl.miss{color:var(--danger);text-decoration-style:dashed;cursor:help}
+figure{margin:0}
+figure img{display:block;max-width:100%;border-radius:6px;border:1px solid var(--line);background:var(--panel);min-height:48px}
+figcaption{font-size:14px;color:var(--muted);margin-top:6px}
+blockquote{margin:0;padding:4px 0 4px 18px;border-left:3px solid var(--flag);font-size:20px;font-style:italic}
+blockquote cite{display:block;font-style:normal;font-family:var(--font-mono);font-size:12px;letter-spacing:.06em;text-transform:uppercase;color:var(--muted);margin-top:6px}
+hr{border:0;border-top:1px solid var(--line);margin:30px 0}
+.linkcard{display:block;text-decoration:none;color:var(--fg);border:1px solid var(--line);background:var(--panel);border-radius:8px;padding:12px 16px;overflow-wrap:anywhere}
+.linkcard:hover{border-color:var(--accent)}
+.lc-t{display:block;font-weight:700;color:var(--accent)}
+.lc-d{display:block;font-size:15px;color:var(--muted)}
+.lc-u{display:block;font-family:var(--font-mono);font-size:11.5px;color:var(--muted);margin-top:3px}
+.infobox{float:right;width:min(280px,100%);margin:0 0 16px 22px;border:1px solid var(--line);border-top:4px solid var(--accent);background:var(--panel);border-radius:6px;padding:12px 14px;font-size:15px}
+.infobox h3{font-size:22px;text-transform:uppercase;margin-bottom:8px}
+.infobox dl{margin:0;display:grid;grid-template-columns:auto 1fr;gap:4px 12px}
+.infobox dt{font-family:var(--font-mono);font-size:11.5px;letter-spacing:.05em;text-transform:uppercase;color:var(--muted);padding-top:3px}
+.infobox dd{margin:0;overflow-wrap:anywhere}
+.foot{margin-top:44px;padding-top:14px;border-top:1px solid var(--line);display:flex;flex-wrap:wrap;gap:8px 22px}
+.back{margin-top:10px;display:flex;flex-wrap:wrap;gap:8px;align-items:center}
+
+/* home */
+.hero{position:relative;border:1px solid var(--line);background:var(--panel);border-radius:10px;overflow:hidden;padding:34px 26px 26px}
+.hero canvas{position:absolute;inset:0;width:100%;height:100%;pointer-events:none}
+.hero>*:not(canvas){position:relative}
+.hero h1{font-size:clamp(44px,8vw,84px);text-transform:uppercase}
+.hero .tag{font-size:20px;color:var(--muted);margin:10px 0 0;max-width:52ch}
+.hero .stats{margin-top:20px}
+.filters{display:flex;flex-wrap:wrap;gap:8px;margin:24px 0 16px}
+.chip.btnlike{cursor:pointer;font:inherit;font-family:var(--font-mono);font-size:11.5px;letter-spacing:.06em;text-transform:uppercase}
+.chip.on{border-color:var(--accent);background:var(--accent);color:var(--accent-ink)}
+.chip.on .dot{background:var(--accent-ink)!important}
+.cards{display:grid;grid-template-columns:repeat(auto-fill,minmax(230px,1fr));gap:16px}
+.card{display:flex;flex-direction:column;min-width:0;text-decoration:none;color:var(--fg);border:1px solid var(--line);background:var(--panel);border-radius:8px;overflow:hidden}
+.card:hover{border-color:var(--accent)}
+.thumb{aspect-ratio:16/9;background:var(--bg);border-bottom:1px solid var(--line);overflow:hidden}
+.thumb img{width:100%;height:100%;object-fit:cover;display:block}
+.card-b{padding:12px 14px 14px;display:flex;flex-direction:column;gap:6px;min-width:0}
+.card-b h3{font-size:24px;text-transform:uppercase}
+.card-b p{margin:0;font-size:15px;color:var(--muted);display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden}
+.blank{border:1px dashed var(--line);border-radius:10px;padding:34px 22px;text-align:center;color:var(--muted)}
+.blank h2{color:var(--fg);font-size:30px;text-transform:uppercase;margin-bottom:6px}
+
+/* editing */
+.f{width:100%;border:1px solid var(--line);background:var(--bg);color:var(--fg);border-radius:6px;padding:8px 11px;font:inherit;font-size:16px;line-height:1.5}
+textarea.f{resize:vertical;min-height:84px}
+.f.big{font-family:var(--font-display);font-weight:700;font-size:38px;text-transform:uppercase;line-height:1.1;padding:6px 11px}
+.lab{display:block;font-family:var(--font-mono);font-size:11.5px;letter-spacing:.06em;text-transform:uppercase;color:var(--muted);margin:12px 0 4px}
+.editbar{display:flex;flex-wrap:wrap;gap:8px 14px;align-items:center;border:1px dashed var(--accent);border-radius:8px;padding:10px 12px;margin-bottom:20px;background:var(--panel)}
+.editing .blk{border:1px dashed var(--line);border-radius:8px;padding:10px 12px 12px;background:var(--panel)}
+.blk-h{display:flex;align-items:center;gap:6px;margin-bottom:8px}
+.blk-h .mono{flex:1}
+.addrow{display:flex;flex-wrap:wrap;gap:8px;margin-top:26px;padding-top:16px;border-top:1px dashed var(--line)}
+.row2{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:12px}
+.pick{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin-top:8px}
+.pick img{max-width:220px;border-radius:6px;border:1px solid var(--line)}
+.filebtn{position:relative;overflow:hidden;display:inline-block}
+.filebtn input{position:absolute;inset:0;opacity:0;cursor:pointer;font-size:0}
+.lbl-row{display:flex;gap:8px;align-items:center;margin-top:8px}
+.sw{width:26px;height:26px;border-radius:50%;border:2px solid var(--line);flex:none;padding:0}
+.panel{border:1px solid var(--line);background:var(--panel);border-radius:8px;padding:14px 16px;margin-top:22px}
+.panel h3{font-size:22px;text-transform:uppercase}
+
+/* gate + toast */
+.gate{position:fixed;inset:0;z-index:60;display:flex;align-items:center;justify-content:center;background:color-mix(in srgb,var(--bg) 78%,transparent);padding:16px}
+.gate-card{width:min(380px,100%);border:1px solid var(--line);background:var(--panel);border-radius:10px;padding:20px}
+.gate-card h2{font-size:28px;text-transform:uppercase;margin-bottom:6px}
+.gate-card p{margin:0 0 12px;color:var(--muted);font-size:15px}
+.gate-err{color:var(--danger);font-size:14px;min-height:20px;margin-top:6px}
+.toast{position:fixed;left:50%;bottom:calc(20px + env(safe-area-inset-bottom,0px));transform:translateX(-50%);background:var(--fg);color:var(--bg);padding:9px 16px;border-radius:6px;font-size:15px;z-index:70;max-width:calc(100vw - 32px)}
+
+@media (max-width:860px){
+  .layout{grid-template-columns:minmax(0,1fr);gap:0}
+  .menu-btn{display:inline-block}
+  .side{position:fixed;top:0;bottom:0;left:0;width:min(86vw,320px);max-height:none;z-index:40;background:var(--panel);border-right:1px solid var(--line);transform:translateX(-102%);transition:transform .2s;padding:calc(18px + env(safe-area-inset-top,0px)) 16px calc(24px + env(safe-area-inset-bottom,0px)) calc(16px + env(safe-area-inset-left,0px))}
+  .side.open{transform:none}
+  .scrim.open{display:block;position:fixed;inset:0;z-index:35;background:color-mix(in srgb,var(--bg) 70%,transparent)}
+  .infobox{float:none;width:100%;margin:0}
+  .status{display:none}
+  .f.big{font-size:30px}
+}
+:root{--bg:#f1f1f1;--panel:#ffffff;--fg:#0a0a0a;--muted:#5e5e5e;--line:#d6d6d6;--accent:#0a0a0a;--accent-ink:#ffffff;--flag:#0a0a0a;--danger:#b00020;--glow:rgba(0,0,0,.10);--spin:#0a0a0a;--l1:#0a0a0a;--l2:#383838;--l3:#666666;--l4:#8c8c8c;--l5:#adadad;--l6:#c4c4c4}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){--bg:#050505;--panel:#0e0e0e;--fg:#f2f2f2;--muted:#9a9a9a;--line:#262626;--accent:#f2f2f2;--accent-ink:#050505;--flag:#f2f2f2;--danger:#ff8c8c;--glow:rgba(255,255,255,.13);--spin:#ffffff;--l1:#ffffff;--l2:#d0d0d0;--l3:#a6a6a6;--l4:#7e7e7e;--l5:#5c5c5c;--l6:#444444}}
+:root[data-theme="dark"]{--bg:#050505;--panel:#0e0e0e;--fg:#f2f2f2;--muted:#9a9a9a;--line:#262626;--accent:#f2f2f2;--accent-ink:#050505;--flag:#f2f2f2;--danger:#ff8c8c;--glow:rgba(255,255,255,.13);--spin:#ffffff;--l1:#ffffff;--l2:#d0d0d0;--l3:#a6a6a6;--l4:#7e7e7e;--l5:#5c5c5c;--l6:#444444}
+
+/* moving black and white glow behind the page (transform only, so it stays light on the GPU) */
+.glow{position:fixed;inset:0;z-index:-1;overflow:hidden;pointer-events:none;contain:strict}
+.glow i{position:absolute;border-radius:50%;background:radial-gradient(closest-side,var(--glow),transparent);will-change:transform}
+.glow i:nth-child(1){width:70vmax;height:70vmax;left:-22vmax;top:-26vmax;animation:d1 28s ease-in-out infinite alternate}
+.glow i:nth-child(2){width:62vmax;height:62vmax;right:-24vmax;bottom:-30vmax;animation:d2 34s ease-in-out infinite alternate}
+.glow i:nth-child(3){width:42vmax;height:42vmax;left:35vw;top:25vh;opacity:.6;animation:d3 40s ease-in-out infinite alternate}
+@keyframes d1{to{transform:translate3d(46vmax,32vmax,0) scale(1.15)}}
+@keyframes d2{to{transform:translate3d(-48vmax,-28vmax,0) scale(1.1)}}
+@keyframes d3{to{transform:translate3d(-30vmax,26vmax,0) scale(1.25)}}
+
+/* hero: a light beam travels around its edge */
+.hero{border:0;background:transparent;isolation:isolate;box-shadow:0 0 40px -8px var(--glow)}
+.hero::before{content:"";position:absolute;left:50%;top:50%;width:max(160%,720px);aspect-ratio:1;translate:-50% -50%;background:conic-gradient(from 0deg,transparent 0 58%,var(--spin) 82%,transparent 100%);animation:spin 8s linear infinite;will-change:transform}
+.hero::after{content:"";position:absolute;inset:1.5px;border-radius:9px;background:var(--panel)}
+.hero>*{position:relative;z-index:1}
+@keyframes spin{to{rotate:360deg}}
+.hero h1{background:linear-gradient(100deg,var(--fg) 35%,var(--muted) 50%,var(--fg) 65%);background-size:220% 100%;-webkit-background-clip:text;background-clip:text;color:transparent;animation:shine 9s linear infinite}
+@keyframes shine{to{background-position:-220% 0}}
+.btn.pri{background:linear-gradient(135deg,var(--accent),color-mix(in srgb,var(--accent) 65%,var(--bg)))}
+.card:hover{box-shadow:none}
+.btn.icon{padding:7px 9px;display:inline-flex;align-items:center}
+.btn.icon svg{width:18px;height:18px}
+
+/* quick search */
+.qs{position:fixed;inset:0;z-index:65;display:flex;justify-content:center;align-items:flex-start;padding:calc(72px + env(safe-area-inset-top,0px)) 16px 16px;background:color-mix(in srgb,var(--bg) 78%,transparent);animation:fadein .15s ease both}
+.qs-card{width:min(620px,100%);max-height:calc(100vh - 130px);display:flex;flex-direction:column;border:1px solid var(--line);background:var(--panel);border-radius:12px;overflow:hidden;box-shadow:0 24px 70px -12px var(--glow);animation:rise .2s ease both}
+.qs-in{width:100%;border:0;background:transparent;color:var(--fg);font:inherit;font-size:19px;padding:16px 18px;outline:none}
+.qs-res{overflow:auto;border-top:1px solid var(--line)}
+.qs-item{display:block;padding:10px 18px;text-decoration:none;color:var(--fg);border-bottom:1px solid var(--line)}
+.qs-item:last-child{border-bottom:0}
+.qs-item:hover,.qs-item.sel{background:var(--bg)}
+.qs-t{font-family:var(--font-display);font-weight:700;font-size:21px;text-transform:uppercase;margin-right:8px}
+.qs-s{display:block;font-size:14px;color:var(--muted);overflow-wrap:anywhere}
+.glow{opacity:var(--gs,1)}
+.noanim .glow i,.noanim .hero::before,.noanim .hero h1{animation:none}
+.card,.linkcard,.panel,.blk,.cover,.infobox,.gate-card,.qs-card{border-radius:var(--r,8px)}
+.btn,.f,.search{border-radius:calc(var(--r,8px)*.75)}
+.hero{border-radius:calc(var(--r,8px)*1.4)}
+.hero::after{border-radius:calc(var(--r,8px)*1.4 - 1.5px)}
+#qsBtn{margin-left:auto}
+
+/* theme panel */
+.theme{position:fixed;top:calc(env(safe-area-inset-top,0px) + 57px);right:0;bottom:0;width:min(360px,100vw);z-index:55;background:var(--panel);border-left:1px solid var(--line);border-top:1px solid var(--line);padding:16px calc(16px + env(safe-area-inset-right,0px)) calc(24px + env(safe-area-inset-bottom,0px)) 16px;overflow:auto;animation:slidein .22s ease both}
+@keyframes slidein{from{transform:translateX(28px);opacity:0}to{transform:none;opacity:1}}
+.th-h{display:flex;justify-content:space-between;align-items:center;gap:12px}
+.th-row{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-top:12px}
+.th-row label{font-size:15px}
+.theme input[type=color]{width:48px;height:32px;border:1px solid var(--line);background:var(--bg);padding:2px;cursor:pointer}
+.theme input[type=range]{width:100%;margin-top:8px;accent-color:var(--accent)}
+.theme input[type=checkbox]{width:20px;height:20px;accent-color:var(--accent)}
+.presets{display:flex;flex-wrap:wrap;gap:8px;margin-top:8px}
+.sw2{display:inline-block;width:10px;height:10px;border-radius:50%;border:1px solid var(--fg)}
+@media (max-width:560px){.bar .btn{padding:6px 9px;font-size:14px}.bar-in{gap:6px}.brand{display:none}}
+html{scroll-behavior:smooth}
+.btn,.card,.nav,.chip,.linkcard,.sw,.f,.search,.blk,.thumb img,.cover img{transition:border-color .18s ease,background-color .18s ease,color .18s ease,transform .18s ease,box-shadow .18s ease,opacity .18s ease}
+.btn:active,.chip.btnlike:active{transform:scale(.97)}
+.card:hover{transform:translateY(-3px);box-shadow:0 8px 22px color-mix(in srgb,var(--fg) 10%,transparent)}
+.linkcard:hover{transform:translateY(-1px)}
+.nav:hover{padding-left:21px}
+.nav{transition:padding-left .18s ease,color .18s ease,border-color .18s ease}
+.f:focus{border-color:var(--accent);box-shadow:0 0 0 3px color-mix(in srgb,var(--accent) 22%,transparent);outline:none}
+.thumb img,.cover img,figure img{opacity:0;animation:imgin .35s ease .05s forwards}
+@keyframes imgin{to{opacity:1}}
+.fade{animation:rise .3s ease both}
+@keyframes rise{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
+.gate{animation:fadein .18s ease both}
+.gate-card{animation:rise .22s ease both}
+.toast{animation:rise .2s ease both}
+@keyframes fadein{from{opacity:0}to{opacity:1}}
+.scrim{opacity:0;transition:opacity .2s ease}
+.scrim.open{opacity:1}
+@media (prefers-reduced-motion:reduce){html{scroll-behavior:auto}.side{transition:none}*,*::before,*::after{animation-duration:.01ms!important;animation-delay:0s!important;transition-duration:.01ms!important}}
+</style>
+</head>
+<body>
+
+<div class="glow" aria-hidden="true"><i></i><i></i><i></i></div>
+<header class="bar"><div class="bar-in">
+  <button class="btn menu-btn" data-act="menu" aria-label="Open page menu">Menu</button>
+  <a class="brand" id="brand" href="#">The Last Adventure Wiki</a>
+  <span class="status" id="status" role="status"></span>
+  <button class="btn icon" id="qsBtn" data-act="qs" aria-label="Search the wiki" title="Search (Ctrl+K)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="M20 20l-4-4"/></svg></button>
+  <button class="btn" id="themeBtn" data-act="theme" hidden>Theme</button>
+  <button class="btn pri" id="saveBtn" data-act="save" hidden title="Save now (Ctrl+S)">Save</button>
+  <button class="btn" id="editBtn" data-act="edit" hidden>Edit</button>
+</div></header>
+
+<div class="layout">
+  <aside class="side" id="side" aria-label="Pages">
+    <input class="search" id="search" type="search" placeholder="Search pages" aria-label="Search pages" autocomplete="off">
+    <a class="nav-home" href="#" id="navHome">Home</a>
+    <div id="newWrap"></div>
+    <div id="list"></div>
+  </aside>
+  <main id="main"><div class="blank"><h2>Loading</h2><p>Opening the wiki.</p></div></main>
+</div>
+<div class="scrim" id="scrim" data-act="scrim"></div>
+
+<div class="gate" id="gate" hidden>
+  <form class="gate-card" id="gateForm" autocomplete="off">
+    <h2>Edit code</h2>
+    <p>Enter the code to edit pages. Changes save on their own.</p>
+    <label class="lab" for="gateCode">Code</label>
+    <input class="f" id="gateCode" type="password" autocomplete="off">
+    <div class="gate-err" id="gateErr" role="alert"></div>
+    <div style="display:flex;gap:8px;justify-content:flex-end;margin-top:6px">
+      <button type="button" class="btn ghost" data-act="gate-cancel">Cancel</button>
+      <button type="submit" class="btn pri">Unlock</button>
+    </div>
+  </form>
+</div>
+<div class="toast" id="toast" hidden></div>
+<aside class="theme" id="theme" hidden aria-label="Theme"><div class="th-h"><h3>Theme</h3><button class="btn sm" data-act="theme-close">Close</button></div><div id="thBody"></div></aside>
+<div class="qs" id="qs" hidden data-act="qs-close"><div class="qs-card" role="dialog" aria-label="Search the wiki"><input class="qs-in" id="qsIn" type="search" placeholder="Search pages, labels and text" autocomplete="off" aria-label="Search the wiki"><div class="qs-res" id="qsRes"></div></div></div>
+
+<script src="config.js"></script>
+<script>
+(function(){
+"use strict";
+var CFG=window.WIKI_CONFIG||{};
+var LW={};
+function api(path,opts){
+  opts=opts||{};
+  opts.headers=Object.assign({apikey:CFG.SUPABASE_ANON_KEY,Authorization:"Bearer "+CFG.SUPABASE_ANON_KEY,"Content-Type":"application/json"},opts.headers||{});
+  return fetch(String(CFG.SUPABASE_URL).replace(/\/$/,"")+"/rest/v1/"+path,opts).then(function(r){
+    return r.text().then(function(t){
+      if(!r.ok)throw new Error(t||String(r.status));
+      return t?JSON.parse(t):null;
+    });
+  });
+}
+function rpc(name,body){return api("rpc/"+name,{method:"POST",body:JSON.stringify(body)})}
+function CODE(){return lsGet("tla-code")||""}
+function apiSave(path,data){
+  var p=path.split("/");
+  return p[0]==="wiki"?rpc("wiki_save",{p_code:CODE(),p_kind:"meta",p_id:"meta",p_data:data}):rpc("wiki_save",{p_code:CODE(),p_kind:"section",p_id:p[1],p_data:data});
+}
+function apiGetMedia(id){return api("wiki_media?id=eq."+encodeURIComponent(id)+"&select=data").then(function(r){return r&&r[0]?r[0].data:null})}
+var BLOCKS={heading:"Heading",text:"Text",image:"Photo",link:"Link",infobox:"Infobox",quote:"Quote",divider:"Divider"};
+
+var $=function(s,r){return (r||document).querySelector(s)};
+var main=$("#main"),listEl=$("#list"),statusEl=$("#status");
+var db=null,userCap=null;
+var S={meta:{title:"The Last Adventure Wiki",tagline:"",labels:[]},sections:{},media:{},view:null,edit:false,unlocked:false,q:"",filter:null,loaded:false,confirmDel:false,stale:false,canWrite:null,err:false};
+
+function esc(s){return String(s==null?"":s).replace(/[&<>"']/g,function(c){return {"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]})}
+function uid(){return Math.random().toString(36).slice(2,9)+Date.now().toString(36).slice(-3)}
+function clone(o){return JSON.parse(JSON.stringify(o))}
+function lsGet(k){try{return localStorage.getItem(k)}catch(e){return null}}
+function lsSet(k,v){try{localStorage.setItem(k,v)}catch(e){}}
+function toast(t){var el=$("#toast");el.textContent=t;el.hidden=false;clearTimeout(toast.t);toast.t=setTimeout(function(){el.hidden=true},2600)}
+function fmt(iso){if(!iso)return"";try{return new Date(iso).toLocaleDateString(undefined,{year:"numeric",month:"short",day:"numeric"})}catch(e){return""}}
+function hostOf(u){try{return new URL(u).hostname.replace(/^www\./,"")}catch(e){return u}}
+function fixUrl(u){u=String(u||"").trim();if(!u)return"";return /^https?:\/\//i.test(u)?u:"https://"+u}
+function findByTitle(n){n=String(n).trim().toLowerCase();var k=Object.keys(S.sections);for(var i=0;i<k.length;i++){if(String(S.sections[k[i]].title||"").trim().toLowerCase()===n)return Object.assign({id:k[i]},S.sections[k[i]])}return null}
+function labelOf(id){return S.meta.labels.filter(function(l){return l.id===id})[0]||null}
+function lcol(l){return "var(--l"+((l&&l.c)||1)+")"}
+function blocksText(s){return (s.blocks||[]).map(function(b){return [b.text,b.title,b.desc,b.caption,b.rows,b.by].join(" ")}).join(" ")}
+function byTitle(a,b){return String(a.title||"").localeCompare(String(b.title||""))}
+
+/* ---------- saving (automatic) ---------- */
+var Q={};
+function setStatus(){
+  var busy=Object.keys(Q).some(function(p){return dirty(p)});
+  statusEl.className="status"+(S.err&&!busy?" err":"");
+  statusEl.textContent=busy?"Saving...":(S.err?"Could not save. You may not have edit access.":(S.unlocked&&S.edit?"All changes saved":""));
+}
+function dirty(p){var q=Q[p];return !!q&&(q.busy||q.timer!=null||q.again)}
+function queueSave(path,getter){
+  var q=Q[path]||(Q[path]={timer:null,busy:false,again:false,getter:null});
+  q.getter=getter;clearTimeout(q.timer);q.timer=setTimeout(function(){flush(path)},600);setStatus();
+}
+function flush(path){
+  var q=Q[path];if(!q)return Promise.resolve();
+  if(q.busy){q.again=true;return Promise.resolve()}
+  q.busy=true;q.timer=null;
+  return Promise.resolve().then(function(){var d=q.getter();return d?apiSave(path,clone(d)):null})
+  .then(function(){S.err=false},function(e){S.err=true;if(/bad code/i.test(String(e&&e.message))){lsSet("tla-code","");S.unlocked=false;S.edit=false;renderAll();toast("The edit code changed. Unlock again.")}else toast("Could not save that change.")})
+  .then(function(){q.busy=false;LW[path]=Date.now();if(q.again){q.again=false;return flush(path)}setStatus()});
+}
+function saveSec(id){var s=S.sections[id];if(!s)return;s.updatedAt=new Date().toISOString();queueSave("sections/"+id,function(){return S.sections[id]})}
+function saveMeta(){queueSave("wiki/meta",function(){return S.meta})}
+
+/* ---------- media ---------- */
+var inflight={};
+function getMedia(id){
+  if(S.media[id]!==undefined)return Promise.resolve(S.media[id]);
+  if(!inflight[id])inflight[id]=apiGetMedia(id).then(function(v){S.media[id]=v;return v},function(){return null});
+  return inflight[id];
+}
+function hydrate(root){
+  if(!db)return;
+  root.querySelectorAll("img[data-media]").forEach(function(img){
+    getMedia(img.getAttribute("data-media")).then(function(d){if(d)img.src=d;else img.alt=img.alt||"Photo not found"});
+  });
+}
+function toData(file,max){
+  return new Promise(function(res,rej){
+    var url=URL.createObjectURL(file),img=new Image();
+    img.onerror=function(){rej(new Error("That file is not an image I can read."))};
+    img.onload=function(){
+      var w=img.naturalWidth,h=img.naturalHeight,scale=Math.min(1,max/Math.max(w,h)),q=.82;
+      for(var i=0;i<9;i++){
+        var cw=Math.max(1,Math.round(w*scale)),ch=Math.max(1,Math.round(h*scale)),c=document.createElement("canvas");
+        c.width=cw;c.height=ch;var x=c.getContext("2d");x.fillStyle="#fff";x.fillRect(0,0,cw,ch);x.drawImage(img,0,0,cw,ch);
+        var out=c.toDataURL("image/jpeg",q);
+        if(out.length<230000){URL.revokeObjectURL(url);return res({data:out,w:cw,h:ch})}
+        scale*=.82;q=Math.max(.6,q-.06);
+      }
+      rej(new Error("That photo is too large to store."));
+    };
+    img.src=url;
+  });
+}
+function uploadMedia(file,max){
+  return toData(file,max).then(function(r){
+    var id=uid();
+    return rpc("wiki_save_media",{p_code:CODE(),p_id:id,p_data:r.data}).then(function(){S.media[id]=r.data;return id});
+  });
+}
+function dropMedia(id){if(!id)return;delete S.media[id];rpc("wiki_delete",{p_code:CODE(),p_kind:"media",p_id:id}).catch(function(){})}
+
+/* ---------- rich text ---------- */
+function rich(src){
+  var t=esc(src);
+  t=t.replace(/\[\[([^\]]+)\]\]/g,function(m,n){var s=findByTitle(n);return s?'<a class="wl" href="#page-'+s.id+'">'+n+'</a>':'<span class="wl miss" title="No page with this name yet">'+n+'</span>'});
+  t=t.replace(/\*\*(.+?)\*\*/g,"<strong>$1</strong>").replace(/\*(.+?)\*/g,"<em>$1</em>");
+  return t;
+}
+function paras(src){return String(src||"").split(/\n{2,}/).filter(function(p){return p.trim()}).map(function(p){return "<p>"+rich(p).replace(/\n/g,"<br>")+"</p>"}).join("")}
+
+/* ---------- views ---------- */
+function matches(s,q){
+  if(!q)return true;
+  var l=labelOf(s.labelId);
+  return (String(s.title||"")+" "+(s.summary||"")+" "+(l?l.name:"")+" "+blocksText(s)).toLowerCase().indexOf(q)>-1;
+}
+function allSections(){return Object.keys(S.sections).map(function(id){return Object.assign({id:id},S.sections[id])})}
+
+function renderList(){
+  var q=S.q.trim().toLowerCase(),secs=allSections().filter(function(s){return matches(s,q)}).sort(byTitle),h="";
+  var groups=S.meta.labels.map(function(l){return {l:l,items:secs.filter(function(s){return s.labelId===l.id})}});
+  var known={};S.meta.labels.forEach(function(l){known[l.id]=1});
+  groups.push({l:null,items:secs.filter(function(s){return !known[s.labelId]})});
+  groups.forEach(function(g){
+    if(!g.items.length)return;
+    var name=g.l?g.l.name:(S.meta.labels.length?"Unfiled":"Pages");
+    h+='<div class="grp"><div class="grp-h"><span class="dot" style="background:'+(g.l?lcol(g.l):"var(--muted)")+'"></span><span class="mono">'+esc(name)+'</span></div>';
+    g.items.forEach(function(s){h+='<a class="nav" href="#page-'+s.id+'"'+(S.view===s.id?' aria-current="page"':"")+'>'+esc(s.title||"Untitled")+'</a>'});
+    h+="</div>";
+  });
+  if(!h)h='<div class="empty-note">'+(q?"No pages match.":"No pages yet.")+"</div>";
+  listEl.innerHTML=h;
+  $("#newWrap").innerHTML=S.edit?'<button class="btn pri sm" data-act="new-page" style="margin:6px 0 4px">New page</button>':"";
+  $("#navHome").setAttribute("aria-current",S.view?"false":"page");
+}
+
+function blockView(b){
+  switch(b.type){
+    case "heading":return "<h2>"+esc(b.text)+"</h2>";
+    case "text":return paras(b.text);
+    case "image":return b.media?'<figure><img data-media="'+b.media+'" alt="'+esc(b.caption||"")+'">'+(b.caption?"<figcaption>"+esc(b.caption)+"</figcaption>":"")+"</figure>":"";
+    case "link":{var u=fixUrl(b.url);return u?'<a class="linkcard" href="'+esc(u)+'" target="_blank" rel="noopener noreferrer"><span class="lc-t">'+esc(b.title||hostOf(u))+"</span>"+(b.desc?'<span class="lc-d">'+esc(b.desc)+"</span>":"")+'<span class="lc-u">'+esc(hostOf(u))+"</span></a>":""}
+    case "infobox":{var rows=String(b.rows||"").split("\n").map(function(r){var i=r.indexOf(":");return i>0?[r.slice(0,i).trim(),r.slice(i+1).trim()]:null}).filter(Boolean);
+      return '<aside class="infobox">'+(b.title?"<h3>"+esc(b.title)+"</h3>":"")+"<dl>"+rows.map(function(r){return "<dt>"+esc(r[0])+"</dt><dd>"+rich(r[1])+"</dd>"}).join("")+"</dl></aside>"}
+    case "quote":return "<blockquote><p>"+rich(b.text).replace(/\n/g,"<br>")+"</p>"+(b.by?"<cite>"+esc(b.by)+"</cite>":"")+"</blockquote>";
+    case "divider":return "<hr>";
+  }
+  return "";
+}
+
+function blockEdit(b,i,n){
+  var id=b.id,h='<div class="blk" data-bid="'+id+'"><div class="blk-h"><span class="mono">'+BLOCKS[b.type]+'</span>'
+   +'<button class="btn sm" data-act="up" data-bid="'+id+'" aria-label="Move up"'+(i===0?" disabled":"")+'>Up</button>'
+   +'<button class="btn sm" data-act="down" data-bid="'+id+'" aria-label="Move down"'+(i===n-1?" disabled":"")+'>Down</button>'
+   +'<button class="btn sm danger" data-act="del-block" data-bid="'+id+'">Remove</button></div>';
+  var F=function(f,v,ph,ml){return (ml?'<textarea class="f" ':'<input class="f" type="text" ')+'id="b-'+id+'-'+f+'" data-scope="blk" data-bid="'+id+'" data-f="'+f+'" placeholder="'+esc(ph)+'"'+(ml?">"+esc(v)+"</textarea>":' value="'+esc(v)+'">')};
+  if(b.type==="heading")h+=F("text",b.text||"","Heading");
+  if(b.type==="text")h+=F("text",b.text||"","Write here. Use [[Page title]] to link to another page, **bold** and *italic*.",1);
+  if(b.type==="quote")h+=F("text",b.text||"","Quote",1)+'<label class="lab" for="b-'+id+'-by">Said by</label>'+F("by",b.by||"","Name");
+  if(b.type==="link")h+='<div class="row2"><div><label class="lab" for="b-'+id+'-title">Title</label>'+F("title",b.title||"","Link title")+'</div><div><label class="lab" for="b-'+id+'-url">Address</label>'+F("url",b.url||"","https://")+'</div></div><label class="lab" for="b-'+id+'-desc">Description</label>'+F("desc",b.desc||"","What is this link?");
+  if(b.type==="infobox")h+='<label class="lab" for="b-'+id+'-title">Box title</label>'+F("title",b.title||"","Name")+'<label class="lab" for="b-'+id+'-rows">One row per line, as Label: Value</label>'+F("rows",b.rows||"","Born: Year 412\nHome: The Ashen Coast",1);
+  if(b.type==="image")h+='<div class="pick">'+(b.media?'<img data-media="'+b.media+'" alt="">':"")+'<span class="btn filebtn">'+(b.media?"Replace photo":"Choose photo")+'<input type="file" accept="image/*" data-up="block" data-bid="'+id+'" aria-label="Choose photo"></span></div><label class="lab" for="b-'+id+'-caption">Caption</label>'+F("caption",b.caption||"","Caption");
+  if(b.type==="divider")h+='<div class="empty-note">A thin line between parts of the page.</div>';
+  return h+"</div>";
+}
+
+function renderPage(){
+  var sec=S.sections[S.view];
+  if(!sec){
+    main.innerHTML=S.loaded?'<div class="blank"><h2>Page not found</h2><p>This page was removed or never existed.</p><p><a href="#">Back to home</a></p></div>':'<div class="blank"><h2>Loading</h2><p>Opening the page.</p></div>';return;
+  }
+  var l=labelOf(sec.labelId),blocks=sec.blocks||[],h="";
+  var crumb='<div class="crumb mono"><a href="#">Home</a>'+(l?" / "+esc(l.name):"")+"</div>";
+  if(S.edit){
+    h+='<div class="editbar"><span class="mono">Editing</span><span class="mono" style="color:var(--fg)">Changes save automatically</span></div>';
+    h+=crumb+'<label class="lab" for="sec-title">Page title</label><input class="f big" id="sec-title" data-scope="sec" data-f="title" value="'+esc(sec.title||"")+'" placeholder="Page title">';
+    h+='<div class="row2"><div><label class="lab" for="sec-label">Label</label><select class="f" id="sec-label" data-scope="sec" data-f="labelId"><option value="">Unfiled</option>'+S.meta.labels.map(function(x){return '<option value="'+x.id+'"'+(sec.labelId===x.id?" selected":"")+">"+esc(x.name)+"</option>"}).join("")+'</select><div class="lbl-row"><input class="f" id="quickLabel" placeholder="New label, for example Legendary" aria-label="New label name"><button class="btn sm pri" data-act="label-quick">Add</button></div></div>'
+      +'<div><label class="lab" for="sec-summary">Short summary</label><input class="f" id="sec-summary" data-scope="sec" data-f="summary" value="'+esc(sec.summary||"")+'" placeholder="One line about this page"></div></div>';
+    h+='<span class="lab">Cover</span><div class="pick">'+(sec.cover?'<img data-media="'+sec.cover+'" alt="">':"")+'<span class="btn filebtn">'+(sec.cover?"Replace cover":"Add cover")+'<input type="file" accept="image/*" data-up="cover" aria-label="Choose cover photo"></span>'+(sec.cover?'<button class="btn" data-act="cover-rm">Remove cover</button>':"")+"</div>";
+    h+='<div class="body" style="max-width:none">';
+    blocks.forEach(function(b,i){h+=blockEdit(b,i,blocks.length)});
+    h+="</div>";
+    h+='<div class="addrow"><span class="mono" style="width:100%">Add to this page</span>'+Object.keys(BLOCKS).map(function(t){return '<button class="btn" data-act="add" data-type="'+t+'">'+BLOCKS[t]+"</button>"}).join("")+"</div>";
+    h+='<div class="panel"><h3>Delete this page</h3>'+(S.confirmDel?'<p>This removes the page and its photos for everyone.</p><button class="btn danger" data-act="del-yes">Yes, delete</button> <button class="btn" data-act="del-no">Keep it</button>':'<p class="empty-note">Removes the page for everyone.</p><button class="btn danger" data-act="del-page">Delete page</button>')+"</div>";
+  }else{
+    h+=crumb+'<h1 class="page-title">'+esc(sec.title||"Untitled")+"</h1>";
+    if(l)h+='<div style="margin-top:12px"><span class="chip"><span class="dot" style="background:'+lcol(l)+'"></span>'+esc(l.name)+"</span></div>";
+    if(sec.summary)h+='<p class="summary">'+esc(sec.summary)+"</p>";
+    if(sec.cover)h+='<div class="cover"><img data-media="'+sec.cover+'" alt=""></div>';
+    h+='<div class="body">'+(blocks.length?blocks.map(blockView).join(""):'<p class="empty-note">This page is empty.'+(S.unlocked?" Press Edit to add content.":"")+"</p>")+"</div>";
+    var t=String(sec.title||"").trim().toLowerCase(),back=t?allSections().filter(function(o){return o.id!==S.view&&(o.blocks||[]).some(function(b){return String(b.text||"").toLowerCase().indexOf("[["+t+"]]")>-1})}):[];
+    h+='<div class="foot"><span class="mono">Last edited '+esc(fmt(sec.updatedAt)||"recently")+"</span></div>";
+    if(back.length)h+='<div class="back"><span class="mono">Linked from</span>'+back.map(function(o){return '<a class="chip" href="#page-'+o.id+'">'+esc(o.title||"Untitled")+"</a>"}).join("")+"</div>";
+  }
+  main.innerHTML=h;
+  main.querySelectorAll("textarea.f").forEach(grow);
+}
+
+function renderHome(){
+  var q=S.q.trim().toLowerCase(),secs=allSections().filter(function(s){return matches(s,q)&&(!S.filter||s.labelId===S.filter)}).sort(byTitle),h="";
+  var total=Object.keys(S.sections).length;
+  h+='<section class="hero">';
+  if(S.edit){
+    h+='<div class="editbar"><span class="mono">Editing</span><span class="mono" style="color:var(--fg)">Changes save automatically</span></div>'
+      +'<label class="lab" for="m-title">Wiki name</label><input class="f big" id="m-title" data-scope="meta" data-f="title" value="'+esc(S.meta.title)+'">'
+      +'<label class="lab" for="m-tag">Tagline</label><input class="f" id="m-tag" data-scope="meta" data-f="tagline" value="'+esc(S.meta.tagline||"")+'" placeholder="One line about the world or story">';
+  }else{
+    h+='<div class="mono">Wiki</div><h1>'+esc(S.meta.title)+"</h1>"+(S.meta.tagline?'<p class="tag">'+esc(S.meta.tagline)+"</p>":"");
+  }
+  h+='<div class="stats mono">'+total+" page"+(total===1?"":"s")+" / "+S.meta.labels.length+" label"+(S.meta.labels.length===1?"":"s")+"</div></section>";
+  if(S.edit){
+    h+='<div class="panel"><h3>Labels</h3><p class="empty-note" style="margin:2px 0 4px">Labels group pages in the menu. Tap the dot to change its shade.</p>';
+    S.meta.labels.forEach(function(l){h+='<div class="lbl-row"><button class="sw" style="background:'+lcol(l)+'" data-act="label-color" data-lid="'+l.id+'" aria-label="Change color"></button><input class="f" data-scope="label" data-lid="'+l.id+'" value="'+esc(l.name)+'" aria-label="Label name"><button class="btn sm danger" data-act="label-del" data-lid="'+l.id+'">Delete</button></div>'});
+    h+='<div class="lbl-row"><input class="f" id="newLabel" placeholder="New label, for example Places" aria-label="New label name"><button class="btn pri" data-act="label-add">Add label</button></div></div>';
+  }
+  if(S.meta.labels.length||S.filter){
+    h+='<div class="filters"><button class="chip btnlike'+(!S.filter?" on":"")+'" data-act="filter" data-lid="">All</button>'+S.meta.labels.map(function(l){return '<button class="chip btnlike'+(S.filter===l.id?" on":"")+'" data-act="filter" data-lid="'+l.id+'"><span class="dot" style="background:'+lcol(l)+'"></span>'+esc(l.name)+"</button>"}).join("")+"</div>";
+  }else h+='<div style="height:22px"></div>';
+  if(S.edit)h+='<p style="margin:0 0 14px"><button class="btn pri" data-act="new-page">New page</button></p>';
+  if(!secs.length){
+    h+='<div class="blank"><h2>'+(total?"Nothing here":"No pages yet")+"</h2><p>"+(total?"No pages match this search or label.":(S.unlocked?"Press Edit, then New page to write the first one.":"Pages will show up here once someone adds them."))+"</p></div>";
+  }else{
+    h+='<div class="cards">'+secs.map(function(s){var l=labelOf(s.labelId);
+      return '<a class="card" href="#page-'+s.id+'"><div class="thumb">'+(s.cover?'<img data-media="'+s.cover+'" alt="">':"")+'</div><div class="card-b">'+(l?'<span class="chip" style="align-self:flex-start"><span class="dot" style="background:'+lcol(l)+'"></span>'+esc(l.name)+"</span>":"")+"<h3>"+esc(s.title||"Untitled")+"</h3>"+(s.summary?"<p>"+esc(s.summary)+"</p>":"")+"</div></a>"}).join("")+"</div>";
+  }
+  main.innerHTML=h;
+}
+
+function renderMain(){
+  document.body.classList.toggle("editing",S.edit);
+  if(S.view)renderPage();else renderHome();
+  hydrate(main);
+}
+function renderAll(){
+  $("#brand").textContent=S.meta.title||"The Last Adventure Wiki";
+  document.title=S.meta.title||"The Last Adventure Wiki";
+  applyTheme();$("#saveBtn").hidden=!S.edit;$("#themeBtn").hidden=!S.edit;if(!S.edit)$("#theme").hidden=true;var b=$("#editBtn");b.hidden=!db||S.canWrite===false;b.textContent=S.edit?"Done":"Edit";b.className="btn"+(S.edit?" pri":"");
+  renderList();renderMain();setStatus();
+}
+function softRender(){
+  var a=document.activeElement;
+  if(S.edit&&a&&main.contains(a)&&/^(INPUT|TEXTAREA|SELECT)$/.test(a.tagName)){S.stale=true;renderList();return}
+  renderAll();
+}
+
+/* contour lines in the home hero */
+function drawContours(){
+  var c=$("#contours");if(!c)return;
+  var r=c.getBoundingClientRect(),dpr=window.devicePixelRatio||1,w=Math.max(1,r.width),h=Math.max(1,r.height);
+  c.width=w*dpr;c.height=h*dpr;var x=c.getContext("2d");x.scale(dpr,dpr);
+  x.strokeStyle=getComputedStyle(document.documentElement).getPropertyValue("--contour")||"#888";x.lineWidth=1.2;
+  [[w*.78,h*.55,1],[w*.12,h*1.05,.7]].forEach(function(f){
+    for(var k=1;k<=16;k++){
+      x.beginPath();
+      for(var a=0;a<=Math.PI*2+.05;a+=.05){
+        var rr=k*17*f[2]*(1+.16*Math.sin(3*a+k*.35)+.09*Math.sin(5*a+1.7)+.05*Math.sin(9*a+k*.2));
+        var px=f[0]+Math.cos(a)*rr*1.5,py=f[1]+Math.sin(a)*rr;
+        if(a===0)x.moveTo(px,py);else x.lineTo(px,py);
+      }
+      x.stroke();
+    }
+  });
+}
+
+/* ---------- navigation ---------- */
+function route(){
+  var m=/^#page-([A-Za-z0-9]+)$/.exec(location.hash);
+  S.view=m?m[1]:null;S.confirmDel=false;
+  renderAll();window.scrollTo({top:0,left:0,behavior:"instant"});closeDrawer();closeQs();main.classList.remove("fade");void main.offsetWidth;main.classList.add("fade");
+}
+function closeDrawer(){$("#side").classList.remove("open");$("#scrim").classList.remove("open")}
+
+/* ---------- editing actions ---------- */
+function grow(t){t.style.height="auto";t.style.height=Math.max(84,t.scrollHeight+2)+"px"}
+function newPage(){
+  var id=uid(),now=new Date().toISOString();
+  S.sections[id]={title:"New page",summary:"",labelId:S.filter||"",cover:null,blocks:[],createdAt:now,updatedAt:now};
+  queueSave("sections/"+id,function(){return S.sections[id]});
+  S.edit=true;location.hash="#page-"+id;
+}
+function addBlock(t){
+  var s=S.sections[S.view];if(!s)return;
+  var b={id:uid(),type:t};if(t==="text"||t==="heading"||t==="quote")b.text="";
+  s.blocks=(s.blocks||[]).concat([b]);saveSec(S.view);renderAll();
+  var el=$("#b-"+b.id+"-text")||$("#b-"+b.id+"-title");if(el)el.focus();
+}
+function moveBlock(id,d){
+  var s=S.sections[S.view],a=s.blocks,i=a.findIndex(function(b){return b.id===id}),j=i+d;
+  if(i<0||j<0||j>=a.length)return;var t=a[i];a[i]=a[j];a[j]=t;saveSec(S.view);renderAll();
+}
+function removeBlock(id){
+  var s=S.sections[S.view],b=s.blocks.filter(function(x){return x.id===id})[0];
+  if(b&&b.media)dropMedia(b.media);
+  s.blocks=s.blocks.filter(function(x){return x.id!==id});saveSec(S.view);renderAll();
+}
+function deletePage(){
+  var id=S.view,s=S.sections[id];if(!s)return;
+  if(s.cover)dropMedia(s.cover);(s.blocks||[]).forEach(function(b){if(b.media)dropMedia(b.media)});
+  delete S.sections[id];delete Q["sections/"+id];
+  rpc("wiki_delete",{p_code:CODE(),p_kind:"section",p_id:id}).catch(function(){toast("Could not delete the page.")});
+  S.confirmDel=false;location.hash="";
+}
+function handleInput(e){
+  var t=e.target,sc=t.getAttribute&&t.getAttribute("data-scope");if(!sc)return;
+  var f=t.getAttribute("data-f");
+  if(sc==="sec"){var s=S.sections[S.view];if(!s)return;s[f]=t.value;saveSec(S.view);if(f!=="summary")renderList()}
+  else if(sc==="blk"){var s2=S.sections[S.view],b=s2.blocks.filter(function(x){return x.id===t.getAttribute("data-bid")})[0];if(!b)return;b[f]=t.value;saveSec(S.view);if(t.tagName==="TEXTAREA")grow(t)}
+  else if(sc==="meta"){S.meta[f]=t.value;saveMeta();if(f==="title"){$("#brand").textContent=S.meta.title;document.title=S.meta.title}}
+  else if(sc==="label"){var l=labelOf(t.getAttribute("data-lid"));if(l){l.name=t.value;saveMeta();renderList()}}
+}
+function upload(input){
+  var file=input.files&&input.files[0];if(!file)return;
+  var kind=input.getAttribute("data-up"),sec=S.sections[S.view],sid=S.view;
+  toast("Uploading photo...");
+  uploadMedia(file,kind==="cover"?1400:1200).then(function(mid){
+    if(kind==="cover"){dropMedia(sec.cover);sec.cover=mid}
+    else{var b=sec.blocks.filter(function(x){return x.id===input.getAttribute("data-bid")})[0];if(b){dropMedia(b.media);b.media=mid}}
+    saveSec(sid);if(S.view===sid)renderAll();toast("Photo added");
+  }).catch(function(e){toast(e&&e.message?e.message:"Could not add that photo.")});
+}
+
+document.addEventListener("click",function(e){
+  var el=e.target.closest("[data-act]");if(!el)return;
+  var a=el.getAttribute("data-act"),bid=el.getAttribute("data-bid"),lid=el.getAttribute("data-lid");
+  switch(a){
+    case "menu":$("#side").classList.add("open");$("#scrim").classList.add("open");break;
+    case "scrim":closeDrawer();break;
+    case "qs":openQs();break;
+    case "save":saveAll();break;
+    case "theme":$("#theme").hidden=false;renderTheme();break;
+    case "theme-close":$("#theme").hidden=true;break;
+    case "theme-preset":{var tk=el.getAttribute("data-k"),th=themeObj();if(tk==="default")th.custom=false;else{var pr=PRESETS.filter(function(x){return x.k===tk})[0];if(pr){["bg","panel","fg","accent","glowC"].forEach(function(k){th[k]=pr[k]});th.custom=true}}applyTheme();saveMeta();renderTheme();break}
+    case "theme-reset":S.meta.theme=null;applyTheme();saveMeta();renderTheme();break;
+    case "qs-close":if(e.target===el)closeQs();break;
+    case "label-quick":{var qi=$("#quickLabel"),qn=qi.value.trim();if(!qn){qi.focus();return}var nl={id:uid(),name:qn,c:(S.meta.labels.length%6)+1};S.meta.labels=S.meta.labels.concat([nl]);saveMeta();var cs=S.sections[S.view];if(cs){cs.labelId=nl.id;saveSec(S.view)}renderAll();break}
+    case "edit":
+      if(S.unlocked){S.edit=!S.edit;S.confirmDel=false;renderAll()}
+      else{$("#gate").hidden=false;$("#gateErr").textContent="";$("#gateCode").value="";setTimeout(function(){$("#gateCode").focus()},30)}break;
+    case "gate-cancel":$("#gate").hidden=true;break;
+    case "new-page":newPage();break;
+    case "add":addBlock(el.getAttribute("data-type"));break;
+    case "up":moveBlock(bid,-1);break;
+    case "down":moveBlock(bid,1);break;
+    case "del-block":removeBlock(bid);break;
+    case "cover-rm":{var s=S.sections[S.view];dropMedia(s.cover);s.cover=null;saveSec(S.view);renderAll();break}
+    case "del-page":S.confirmDel=true;renderAll();break;
+    case "del-no":S.confirmDel=false;renderAll();break;
+    case "del-yes":deletePage();break;
+    case "filter":S.filter=lid||null;renderMain();break;
+    case "label-add":{var inp=$("#newLabel"),n=inp.value.trim();if(!n){inp.focus();return}
+      S.meta.labels=S.meta.labels.concat([{id:uid(),name:n,c:(S.meta.labels.length%6)+1}]);saveMeta();renderAll();break}
+    case "label-color":{var l=labelOf(lid);if(l){l.c=(l.c%6)+1;saveMeta();renderAll()}break}
+    case "label-del":S.meta.labels=S.meta.labels.filter(function(x){return x.id!==lid});if(S.filter===lid)S.filter=null;saveMeta();renderAll();break;
+  }
+});
+document.addEventListener("input",handleInput);
+document.addEventListener("change",function(e){if(e.target.getAttribute&&e.target.getAttribute("data-up"))upload(e.target);else handleInput(e)});
+main.addEventListener("focusout",function(){if(S.stale){setTimeout(function(){var a=document.activeElement;if(!(main.contains(a)&&/^(INPUT|TEXTAREA|SELECT)$/.test(a.tagName))){S.stale=false;renderAll()}},60)}});
+$("#search").addEventListener("input",function(e){S.q=e.target.value;renderList();if(!S.view)renderMain()});
+window.addEventListener("hashchange",route);
+window.addEventListener("resize",function(){if(!S.view)drawContours()});
+try{window.matchMedia("(prefers-color-scheme: dark)").addEventListener("change",function(){setTimeout(function(){if(!S.view)drawContours()},60)});
+  new MutationObserver(function(){setTimeout(function(){if(!S.view)drawContours()},60)}).observe(document.documentElement,{attributes:true,attributeFilter:["data-theme"]})}catch(e){}
+
+/* quick search */
+/* theme + save */
+var DEF={bg:"#050505",panel:"#0e0e0e",fg:"#f2f2f2",accent:"#f2f2f2",glowC:"#ffffff"};
+var PRESETS=[
+ {k:"mono-dark",n:"Black",bg:"#050505",panel:"#0e0e0e",fg:"#f2f2f2",accent:"#f2f2f2",glowC:"#ffffff"},
+ {k:"mono-light",n:"White",bg:"#f1f1f1",panel:"#ffffff",fg:"#0a0a0a",accent:"#0a0a0a",glowC:"#000000"},
+ {k:"midnight",n:"Midnight",bg:"#070b16",panel:"#0d1426",fg:"#e6ecff",accent:"#7aa2ff",glowC:"#5b8cff"},
+ {k:"forest",n:"Forest",bg:"#08110c",panel:"#0f1a13",fg:"#e4f1e6",accent:"#6ee7a0",glowC:"#3ddc84"},
+ {k:"ember",n:"Ember",bg:"#120805",panel:"#1c0f0a",fg:"#ffe9dc",accent:"#ff8a4c",glowC:"#ff6a2b"},
+ {k:"violet",n:"Violet",bg:"#0d0816",panel:"#160e26",fg:"#f0e8ff",accent:"#c08bff",glowC:"#a45bff"},
+ {k:"paper",n:"Paper",bg:"#efe9dc",panel:"#faf6ec",fg:"#1d1a14",accent:"#8a3b12",glowC:"#b3702f"}];
+var FONTS={barlow:["Condensed",'"Barlow Condensed","Arial Narrow",sans-serif'],source:["Clean",'"Source Sans 3",system-ui,sans-serif'],plex:["Mono",'"IBM Plex Mono",ui-monospace,Menlo,monospace']};
+var THEME_VARS=["--bg","--panel","--fg","--muted","--line","--accent","--accent-ink","--flag","--glow","--spin","--l1","--l2","--l3","--l4","--l5","--l6","--font-display","--r","--gs"];
+function hexOk(h){return /^#[0-9a-f]{6}$/i.test(h||"")}
+function lum(h){var n=parseInt(h.slice(1),16);return (0.2126*(n>>16&255)+0.7152*(n>>8&255)+0.0722*(n&255))/255}
+function rgba(h,a){var n=parseInt(h.slice(1),16);return "rgba("+(n>>16&255)+","+(n>>8&255)+","+(n&255)+","+a+")"}
+function applyTheme(){
+  var el=document.documentElement,st=el.style,t=S.meta.theme||{};
+  THEME_VARS.forEach(function(v){st.removeProperty(v)});st.removeProperty("color-scheme");
+  var mix=function(p){return "color-mix(in srgb,"+t.fg+" "+p+"%,"+t.bg+")"};
+  if(t.custom&&hexOk(t.bg)&&hexOk(t.panel)&&hexOk(t.fg)&&hexOk(t.accent)){
+    st.setProperty("--bg",t.bg);st.setProperty("--panel",t.panel);st.setProperty("--fg",t.fg);
+    st.setProperty("--muted",mix(58));st.setProperty("--line",mix(16));
+    st.setProperty("--accent",t.accent);st.setProperty("--accent-ink",lum(t.accent)>.55?"#050505":"#ffffff");st.setProperty("--flag",t.accent);
+    var gc=hexOk(t.glowC)?t.glowC:t.accent;
+    st.setProperty("--glow",rgba(gc,.22));st.setProperty("--spin",gc);
+    st.setProperty("--l1",t.accent);[80,64,50,38,26].forEach(function(p,i){st.setProperty("--l"+(i+2),mix(p))});
+    st.setProperty("color-scheme",lum(t.bg)<.5?"dark":"light");
+  }
+  st.setProperty("--gs",String((t.gs==null?100:t.gs)/100));
+  if(t.r!=null)st.setProperty("--r",t.r+"px");
+  if(t.font&&FONTS[t.font])st.setProperty("--font-display",FONTS[t.font][1]);
+  el.classList.toggle("noanim",t.anim===false);
+}
+function themeObj(){
+  if(!S.meta.theme){
+    var cs=getComputedStyle(document.documentElement),g=function(v,d){var x=cs.getPropertyValue(v).trim();return hexOk(x)?x:d};
+    S.meta.theme={custom:false,bg:g("--bg",DEF.bg),panel:g("--panel",DEF.panel),fg:g("--fg",DEF.fg),accent:g("--accent",DEF.accent),glowC:g("--fg",DEF.glowC),gs:100,anim:true,r:8,font:"barlow"};
+  }
+  return S.meta.theme;
+}
+function presetsHtml(){
+  var t=S.meta.theme||{};
+  return '<button class="chip btnlike'+(!t.custom?" on":"")+'" data-act="theme-preset" data-k="default">Device</button>'+PRESETS.map(function(p){
+    var on=t.custom&&["bg","panel","fg","accent","glowC"].every(function(k){return String(t[k]).toLowerCase()===p[k]});
+    return '<button class="chip btnlike'+(on?" on":"")+'" data-act="theme-preset" data-k="'+p.k+'"><span class="sw2" style="background:'+p.accent+'"></span>'+p.n+"</button>";
+  }).join("");
+}
+function renderTheme(){
+  var t=themeObj(),gs=t.gs==null?100:t.gs,r=t.r==null?8:t.r;
+  var c=function(f,l){return '<div class="th-row"><label for="th-'+f+'">'+l+'</label><input type="color" id="th-'+f+'" data-f="'+f+'" value="'+(hexOk(t[f])?t[f]:DEF[f])+'"></div>'};
+  $("#thBody").innerHTML='<span class="lab">Presets</span><div class="presets" id="thPre">'+presetsHtml()+'</div>'
+   +'<span class="lab">Colors</span>'+c("bg","Background")+c("panel","Panels")+c("fg","Text")+c("accent","Buttons and links")+c("glowC","Glow")
+   +'<span class="lab">Glow and motion</span><div class="th-row"><label for="th-gs">Glow strength <span id="th-gs-v">'+gs+'%</span></label></div><input type="range" id="th-gs" data-f="gs" min="0" max="100" value="'+gs+'">'
+   +'<div class="th-row"><label for="th-anim">Moving glow and shine</label><input type="checkbox" id="th-anim" data-f="anim"'+(t.anim===false?"":" checked")+'></div>'
+   +'<span class="lab">Shape and type</span><div class="th-row"><label for="th-r">Corners <span id="th-r-v">'+r+'px</span></label></div><input type="range" id="th-r" data-f="r" min="0" max="24" value="'+r+'">'
+   +'<div class="th-row"><label for="th-font">Headings</label><select class="f" id="th-font" data-f="font" style="width:auto">'+Object.keys(FONTS).map(function(k){return '<option value="'+k+'"'+((t.font||"barlow")===k?" selected":"")+">"+FONTS[k][0]+"</option>"}).join("")+"</select></div>"
+   +'<div style="margin-top:22px"><button class="btn danger" data-act="theme-reset">Reset theme</button></div><p class="empty-note">Theme changes save for everyone who opens the wiki.</p>';
+}
+function thChange(el){
+  var f=el.getAttribute("data-f");if(!f)return;var t=themeObj();
+  if(f==="bg"||f==="panel"||f==="fg"||f==="accent"||f==="glowC"){t[f]=el.value;t.custom=true;$("#thPre").innerHTML=presetsHtml()}
+  else if(f==="gs"){t.gs=+el.value;$("#th-gs-v").textContent=el.value+"%"}
+  else if(f==="r"){t.r=+el.value;$("#th-r-v").textContent=el.value+"px"}
+  else if(f==="anim"){t.anim=el.checked}
+  else if(f==="font"){t.font=el.value}
+  applyTheme();saveMeta();
+}
+$("#thBody").addEventListener("input",function(e){thChange(e.target)});
+$("#thBody").addEventListener("change",function(e){thChange(e.target)});
+function waitClean(){return new Promise(function(res){(function chk(i){if(!Object.keys(Q).some(dirty)||i>40)res();else setTimeout(function(){chk(i+1)},150)})(0)})}
+function saveAll(){
+  var btn=$("#saveBtn"),paths=Object.keys(Q).filter(dirty);
+  if(!paths.length){toast("Everything is already saved");return}
+  btn.textContent="Saving...";
+  paths.forEach(function(p){clearTimeout(Q[p].timer);Q[p].timer=null});
+  Promise.all(paths.map(flush)).then(waitClean).then(function(){btn.textContent="Save";toast(S.err?"Some changes could not be saved":"Everything saved")});
+}
+document.addEventListener("keydown",function(e){if((e.ctrlKey||e.metaKey)&&String(e.key).toLowerCase()==="s"&&S.edit){e.preventDefault();saveAll()}});
+
+var qsSel=0;
+function openQs(){closeDrawer();var o=$("#qs"),i=$("#qsIn");o.hidden=false;i.value="";renderQs();setTimeout(function(){i.focus()},20)}
+function closeQs(){var o=$("#qs");if(o)o.hidden=true}
+function renderQs(){
+  var q=$("#qsIn").value.trim().toLowerCase();
+  var list=allSections().map(function(s){
+    var t=String(s.title||"").toLowerCase(),l=labelOf(s.labelId),txt=blocksText(s),lo=txt.toLowerCase(),sum=String(s.summary||""),sc=0,snip="";
+    if(!q){sc=1;snip=sum}
+    else{
+      if(t.indexOf(q)===0)sc=4;else if(t.indexOf(q)>-1)sc=3;else if(l&&l.name.toLowerCase().indexOf(q)>-1)sc=2;else if(sum.toLowerCase().indexOf(q)>-1||lo.indexOf(q)>-1)sc=1;
+      if(sc>=3)snip=sum;
+      else if(sc){var src=lo.indexOf(q)>-1?txt:sum,k=src.toLowerCase().indexOf(q);if(k>-1)snip=(k>30?"...":"")+src.slice(Math.max(0,k-30),k+70).replace(/\s+/g," ")+"..."}
+    }
+    return {s:s,l:l,sc:sc,snip:snip};
+  }).filter(function(r){return r.sc>0}).sort(function(a,b){return b.sc-a.sc||byTitle(a.s,b.s)}).slice(0,12);
+  qsSel=0;
+  $("#qsRes").innerHTML=list.length?list.map(function(r,i){return '<a class="qs-item'+(i===0?" sel":"")+'" href="#page-'+r.s.id+'"><span class="qs-t">'+esc(r.s.title||"Untitled")+'</span>'+(r.l?'<span class="chip"><span class="dot" style="background:'+lcol(r.l)+'"></span>'+esc(r.l.name)+"</span>":"")+(r.snip?'<span class="qs-s">'+esc(r.snip)+"</span>":"")+"</a>"}).join(""):'<div class="empty-note" style="padding:14px 18px">No pages match.</div>';
+}
+$("#qsIn").addEventListener("input",renderQs);
+$("#qsRes").addEventListener("click",function(){closeQs()});
+document.addEventListener("keydown",function(e){
+  var o=$("#qs");
+  if((e.ctrlKey||e.metaKey)&&String(e.key).toLowerCase()==="k"){e.preventDefault();if(o.hidden)openQs();else closeQs();return}
+  if(o.hidden)return;
+  var items=$("#qsRes").querySelectorAll(".qs-item");
+  if(e.key==="Escape"){closeQs()}
+  else if(e.key==="ArrowDown"||e.key==="ArrowUp"){e.preventDefault();if(!items.length)return;if(items[qsSel])items[qsSel].classList.remove("sel");qsSel=(qsSel+(e.key==="ArrowDown"?1:-1)+items.length)%items.length;items[qsSel].classList.add("sel");items[qsSel].scrollIntoView({block:"nearest"})}
+  else if(e.key==="Enter"&&items[qsSel]){e.preventDefault();var h=items[qsSel].getAttribute("href");closeQs();if(location.hash!==h)location.hash=h}
+});
+
+/* edit code (checked by the database, never in this file) */
+$("#gateForm").addEventListener("submit",function(e){
+  e.preventDefault();
+  var v=$("#gateCode").value.trim().toUpperCase();
+  if(!db){$("#gateErr").textContent="The wiki is not connected yet.";return}
+  rpc("wiki_check",{p_code:v}).then(function(ok){
+    if(ok===true){S.unlocked=true;S.edit=true;lsSet("tla-code",v);$("#gate").hidden=true;renderAll();toast("Edit mode on")}
+    else $("#gateErr").textContent="That code is not right.";
+  },function(){$("#gateErr").textContent="Could not check the code. Check your connection."});
+});
+document.addEventListener("keydown",function(e){if(e.key==="Escape"&&!$("#gate").hidden)$("#gate").hidden=true});
+
+/* ---------- boot ---------- */
+renderAll();
+(function(){
+  if(!CFG.SUPABASE_URL||!CFG.SUPABASE_ANON_KEY){
+    main.innerHTML='<div class="blank"><h2>Almost ready</h2><p>Add your Supabase address and key to config.js. The README explains how.</p></div>';return;
+  }
+  db=true;renderAll();
+  var loadTimer=setTimeout(function(){if(!S.loaded){statusEl.textContent="Cannot reach the wiki yet";statusEl.className="status err"}},10000);
+  function pull(first){
+    var started=Date.now();
+    return Promise.all([api("wiki_meta?id=eq.meta&select=data"),api("wiki_sections?select=id,data")]).then(function(r){
+      clearTimeout(loadTimer);
+      var m=r[0]&&r[0][0]?r[0][0].data:null,rows=r[1]||[],changed=false;
+      if(m&&!dirty("wiki/meta")&&!(LW["wiki/meta"]&&LW["wiki/meta"]>=started-1500)){
+        var nm=Object.assign({title:"The Last Adventure Wiki",tagline:"",labels:[]},m);
+        if(!Array.isArray(nm.labels))nm.labels=[];
+        if(JSON.stringify(nm)!==JSON.stringify(S.meta)){S.meta=nm;changed=true}
+      }
+      var seen={};
+      rows.forEach(function(row){
+        seen[row.id]=1;var p="sections/"+row.id;
+        if(dirty(p)||(LW[p]&&LW[p]>=started-1500))return;
+        if(JSON.stringify(row.data)!==JSON.stringify(S.sections[row.id])){S.sections[row.id]=row.data;changed=true}
+      });
+      Object.keys(S.sections).forEach(function(id){
+        var p="sections/"+id,u=S.sections[id].updatedAt,age=Date.now()-(u?Date.parse(u):0);
+        if(!seen[id]&&!dirty(p)&&!(LW[p]&&LW[p]>=started-1500)&&age>20000){delete S.sections[id];changed=true}
+      });
+      if(first||changed){S.loaded=true;softRender()}
+      setStatus();
+    }).catch(function(){if(first){statusEl.textContent="Cannot reach the wiki yet";statusEl.className="status err"}});
+  }
+  pull(true).then(route);
+  setInterval(function(){if(!document.hidden)pull(false)},8000);
+  document.addEventListener("visibilitychange",function(){if(!document.hidden)pull(false)});
+  if(CODE()){rpc("wiki_check",{p_code:CODE()}).then(function(ok){if(ok===true){S.unlocked=true;renderAll()}else lsSet("tla-code","")},function(){})}
+})();
+})();
+</script>
+
+</body>
+</html>
